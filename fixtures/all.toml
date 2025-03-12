@@ -1,0 +1,128 @@
+# A TOML file that defines all variables.
+
+[package.metadata.nfpm]
+arch = "amd64"
+changelog = "changelog"
+conflicts = ["conflicts"]
+depends = ["depends"]
+description = "description"
+disable_globbing = false
+epoch = "epoch"
+homepage = "homepage"
+license = "license"
+maintainer = "maintainer"
+mtime = "mtime"
+name = "foo"
+platform = "platform"
+prerelease = "prerelease"
+priority = "priority"
+provides = ["provides"]
+recommends = ["recommends"]
+release = "release"
+replaces = ["replaces"]
+section = "section"
+suggests = ["suggests"]
+umask = 2
+vendor = "vendor"
+version = "1.0.0"
+version_metadata = "version_metadata"
+version_schema = "none"
+
+[package.metadata.nfpm.apk]
+arch = "amd64"
+
+[package.metadata.nfpm.apk.scripts]
+postupgrade = "postupgrade"
+preupgrade = "preupgrade"
+
+[package.metadata.nfpm.apk.signature]
+key_file = "key_file"
+key_id = "key_id"
+key_name = "key_name"
+
+[package.metadata.nfpm.archlinux]
+arch = "amd64"
+packager = "packager"
+pkgbase = "pkgbase"
+
+[package.metadata.nfpm.archlinux.scripts]
+postupgrade = "postupgrade"
+preupgrade = "preupgrade"
+
+[[package.metadata.nfpm.contents]]
+dst = "destination"
+expand = false
+packager = "me"
+src = "source"
+type = "config"
+
+[package.metadata.nfpm.deb]
+arch = "amd64"
+breaks = ["breaks"]
+compression = "gzip"
+predepends = ["predepends"]
+
+[package.metadata.nfpm.deb.fields]
+Foo = "Bar"
+
+[package.metadata.nfpm.deb.scripts]
+config = "config"
+rules = "rules"
+templates = "templates"
+
+[package.metadata.nfpm.deb.signature]
+key_file = "key_file"
+key_id = "key_id"
+method = "debsign"
+signer = "signer"
+type = "maint"
+
+[package.metadata.nfpm.deb.triggers]
+activate = ["activate"]
+activate_await = ["activate_await"]
+activate_noawait = ["activate_noawait"]
+interest = ["interest"]
+interest_await = ["interest_await"]
+interest_noawait = ["interest_noawait"]
+
+[package.metadata.nfpm.ipk]
+abi_version = "abi_version"
+arch = "arch"
+auto_installed = false
+essential = false
+predepends = ["predepends"]
+tags = ["tags"]
+
+[[package.metadata.nfpm.ipk.alternatives]]
+link_name = "link_name"
+priority = 1
+target = "target"
+
+[package.metadata.nfpm.ipk.fields]
+Foo = "Bar"
+
+[package.metadata.nfpm.overrides.umask]
+umask = 2
+
+[package.metadata.nfpm.rpm]
+arch = "arch"
+compression = "gzip"
+group = "group"
+packager = "packager"
+prefixes = ["prefixes"]
+summary = "summary"
+
+[package.metadata.nfpm.rpm.scripts]
+posttrans = "posttrans"
+pretrans = "pretrans"
+verify = "verify"
+
+[package.metadata.nfpm.rpm.signature]
+key_file = "key_file"
+key_id = "key_id"
+
+[package.metadata.nfpm.scripts]
+postinstall = "postinstall"
+postremove = "postremove"
+preinstall = "preinstall"
+preremove = "preremove"
