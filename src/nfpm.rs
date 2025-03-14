@@ -19,6 +19,12 @@ pub fn download_nfpm<P>(outdir: P) -> anyhow::Result<()>
 where
     P: AsRef<Utf8Path>,
 {
+    let binary_path = outdir.as_ref().join("nfpm");
+    if binary_path.exists() {
+        return Ok(());
+    }
+    println!("downloading nfpm...");
+
     let os = if cfg!(target_os = "linux") {
         "Linux"
     } else if cfg!(target_os = "macos") {
@@ -93,7 +99,7 @@ where
         if let Some(file_name) = path.file_name() {
             if file_name.to_str() == Some("nfpm") {
                 entry
-                    .unpack(outdir.as_ref().join("nfpm"))
+                    .unpack(&binary_path)
                     .context("unpacking nfpm")?;
                 return Ok(());
             }
