@@ -1,0 +1,70 @@
+name: dist
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  dist:
+    name: dist (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            code-target: win32-x64
+          - os: windows-latest
+            target: i686-pc-windows-msvc
+            code-target: win32-x64
+          - os: windows-latest
+            target: aarch64-pc-windows-msvc
+            code-target: win32-arm64
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            code-target: linux-x64
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            code-target: linux-x64
+          - os: ubuntu-latest
+            target: i686-unknown-linux-musl
+            code-target: linux-x64
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            code-target: linux-arm64
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-musl
+            code-target: linux-arm64
+          - os: ubuntu-latest
+            target: arm-unknown-linux-gnueabihf
+            code-target: linux-armhf
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            code-target: darwin-x64
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            code-target: darwin-arm64
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          target: ${{matrix.target}}
+      - name: Install GCC arm64 (linux)
+        if: startsWith(matrix.target, 'aarch64-unknown-linux')
+        run: sudo apt-get update && sudo apt-get install gcc-aarch64-linux-gnu
+      - name: Install GCC armhf (linux)
+        if: matrix.target == 'arm-unknown-linux-gnueabihf'
+        run: sudo apt-get update && sudo apt-get install gcc-arm-linux-gnueabihf
+      - name: Install i686 glibc (linux)
+        if: matrix.target == 'i686-unknown-linux-musl'
+        run: sudo apt-get install gcc-multilib g++-multilib libc6-dev-i386
+      - run: cargo build --target ${{ matrix.target }} --release
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}
+          path: dist
