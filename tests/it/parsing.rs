@@ -15,9 +15,9 @@ use cargo_nfpm::nfpm_schema::{
 #[test]
 fn roundtrip() {
     let config = Config {
-        name: "foo".to_owned(),
-        arch: "amd64".to_owned(),
-        version: "1.0.0".to_owned(),
+        name: Some("foo".to_owned()),
+        arch: Some("amd64".to_owned()),
+        version: Some("1.0.0".to_owned()),
 
         changelog: Some("changelog".to_owned()),
         description: Some("description".to_owned()),
@@ -155,5 +155,8 @@ fn roundtrip() {
 
     let parsed: CargoManifest = toml::from_str(&alltoml).unwrap();
 
-    assert_eq!(&config, parsed.package.metadata.nfpm.as_ref().unwrap());
+    assert_eq!(
+        &config,
+        parsed.package.metadata.unwrap().nfpm.as_ref().unwrap()
+    );
 }
