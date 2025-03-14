@@ -4,11 +4,10 @@
     <strong>A simple and lightweight Cargo plugin for using <a href="https://nfpm.goreleaser.com/">nFPM</a> from any Rust project.</strong>
   </p>
   <p>
+</div>
 
 [![Build Status](https://github.com/ragnarlab/cargo-nfpm/actions/workflows/ci.yml/badge.svg)](https://github.com/ragnarlab/cargo-nfpm/actions)
 [![Crates.io](https://img.shields.io/crates/v/cargo-nfpm.svg)](https://crates.io/crates/cargo-nfpm)
-[![API reference](https://docs.rs/cargo-nfpm/badge.svg)](https://docs.rs/cargo-nfpm/)
-![MSRV](https://img.shields.io/crates/msrv/cargo-nfpm)
 ![License](https://img.shields.io/crates/l/cargo-nfpm.svg)
 
 ## Installation
