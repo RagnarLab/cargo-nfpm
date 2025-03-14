@@ -2,10 +2,13 @@
 name = "cargo-nfpm"
 version = "0.1.0"
 edition = "2024"
+rust-version = "1.85.0"
 license = "MIT OR Apache-2.0"
 authors = ["Arvid Gerstmann <github@arvid.io>"]
 homepage = "https://github.com/ragnarlab/cargo-nfpm"
 repository = "https://github.com/ragnarlab/cargo-nfpm"
+keywords = ["cargo", "subcommand", "cargo-subcommand", "packaging"]
+categories = ["development-tools::cargo-plugins", "development-tools::build-utils", "command-line-utilities"]
 readme = "README.md"
 
 [dependencies]
