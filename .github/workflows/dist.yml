@@ -63,6 +63,20 @@ jobs:
         if: matrix.target == 'i686-unknown-linux-musl'
         run: sudo apt-get install gcc-multilib g++-multilib libc6-dev-i386
       - run: cargo build --target ${{ matrix.target }} --release
+      - name: Archive
+        shell: bash
+        run: |
+          ver=${GITHUB_REF/refs\/*\//}
+          archive="dist/cargo-nfpm-$ver-${{ matrix.target }}"
+          mkdir -p dist
+
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            7z a "${archive}.zip" target/${{ matrix.target }}/release/cargo-nfpm.exe
+          else
+            tar czf "${archive}.tar.gz" -C target/${{ matrix.target }}/release cargo-nfpm
+          fi
+
+          ls -lah dist/*
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
