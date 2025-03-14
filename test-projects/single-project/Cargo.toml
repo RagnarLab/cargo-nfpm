@@ -4,3 +4,9 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+
+[package.metadata.nfpm]
+epoch = "2"
+contents = [
+    { src = "LICENSE", dst = "/usr/share/licenses/single-project/LICENSE" },
+]
