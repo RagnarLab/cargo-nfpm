@@ -2,7 +2,7 @@ use std::process::Command;
 
 use anyhow::Context;
 use cargo_nfpm::cargo::{self, ProjectBuilder};
-use cargo_nfpm::generator::get_config_from_metadata;
+use cargo_nfpm::generator::{get_config_from_metadata, OutputFormat};
 use cargo_nfpm::nfpm::download_nfpm;
 use cargo_nfpm::nfpm_schema::{ContentElement, FileInfo};
 use clap::Parser;
@@ -18,6 +18,7 @@ pub struct CliArgs {
 
 #[derive(clap::Subcommand, Debug)]
 pub enum Commands {
+    /// Call `cargo-nfpm`.
     Nfpm(NfpmArgs),
 }
 
@@ -29,16 +30,9 @@ pub struct NfpmArgs {
 
 #[derive(clap::Subcommand, Debug)]
 pub enum NfpmCommands {
+    /// Creates a package based on the `Cargo.toml` config
+    #[clap(aliases = ["pkg", "p"])]
     Package(PackageArgs),
-}
-
-#[derive(Debug, Clone, Copy, clap::ValueEnum)]
-pub enum OutputFormat {
-    Apk,
-    ArchLinux,
-    Deb,
-    Ipk,
-    Rpm,
 }
 
 #[derive(clap::Args, Debug)]
@@ -67,7 +61,7 @@ pub struct PackageArgs {
     #[arg(long, action = clap::ArgAction::SetTrue)]
     no_vendor: bool,
 
-    /// Output format.
+    /// Package format.
     #[arg(long, short)]
     format: OutputFormat,
 
@@ -139,7 +133,7 @@ fn main() -> anyhow::Result<()> {
         builder.build()?;
     }
 
-    let mut config = get_config_from_metadata(&metadata, package, &triple)
+    let mut config = get_config_from_metadata(&metadata, package, &triple, args.format)
         .context("create config from Cargo manifest")?;
 
     let auto_add_binary = if let Some(contents) = &config.contents {
@@ -182,7 +176,7 @@ fn main() -> anyhow::Result<()> {
 
     let packager = match args.format {
         OutputFormat::Apk => "apk",
-        OutputFormat::ArchLinux => "archlinux",
+        OutputFormat::Archlinux => "archlinux",
         OutputFormat::Deb => "deb",
         OutputFormat::Ipk => "ipk",
         OutputFormat::Rpm => "rpm",

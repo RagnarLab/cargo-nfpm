@@ -4,11 +4,22 @@ use anyhow::Context;
 
 use crate::cargo_schema::CargoManifest;
 use crate::nfpm_schema;
+use crate::triple::LlvmTriple;
+
+#[derive(Debug, Clone, Copy, clap::ValueEnum)]
+pub enum OutputFormat {
+    Apk,
+    Archlinux,
+    Deb,
+    Ipk,
+    Rpm,
+}
 
 pub fn get_config_from_metadata(
     _metadata: &cargo_metadata::Metadata,
     package: &cargo_metadata::Package,
     triple: &str,
+    format: OutputFormat,
 ) -> anyhow::Result<nfpm_schema::Config> {
     let manifest_str =
         std::fs::read_to_string(&package.manifest_path).context("reading Cargo.toml manifest")?;
@@ -24,7 +35,14 @@ pub fn get_config_from_metadata(
     merge_base_config_with_package(package, &mut base_config)
         .context("merging config with manifest values")?;
 
-    base_config.arch = Some(triple_to_goarch(triple)?);
+    let parsed = LlvmTriple::new(triple).context("parsing cargo target triple")?;
+    base_config.arch = match format {
+        OutputFormat::Apk => Some(parsed.to_apk_arch()?.to_owned()),
+        OutputFormat::Archlinux => Some(parsed.to_archlinux_arch()?.to_owned()),
+        OutputFormat::Deb => Some(parsed.to_deb_arch()?.to_owned()),
+        OutputFormat::Ipk => Some(parsed.to_ipk_arch()?.to_owned()),
+        OutputFormat::Rpm => Some(parsed.to_rpm_arch()?.to_owned()),
+    };
 
     // Set some sane defaults.
     if base_config.epoch.is_none() {
@@ -48,22 +66,6 @@ pub fn get_config_from_metadata(
     assert!(base_config.version.is_some());
 
     Ok(base_config)
-}
-
-/// Triple must follow the general format from LLVM:
-///
-/// The triple has the format `<arch><sub>-<vendor>-<sys>-<env>`
-fn triple_to_goarch(triple: &str) -> anyhow::Result<String> {
-    let (arch, _) = triple.split_once('-').context("triple malformed")?;
-    let goarch = match arch {
-        "aarch64" | "arm64" | "arm64e" => "arm64",
-        "i686" => "386",
-        "x86_64" => "amd64",
-        "arm" | "armv6" | "armv6k" | "armv7" | "armv7k" | "armv7s" | "armv7a" => "arm",
-        arch => return Err(anyhow::anyhow!("unsupported arch: {arch}")),
-    };
-
-    Ok(goarch.to_owned())
 }
 
 fn merge_base_config_with_package(
