@@ -84,6 +84,7 @@ fn main() -> anyhow::Result<()> {
         cargo::get_host_triple()?
     };
     let tmpdir = metadata.target_directory.join("tmp");
+    std::fs::create_dir_all(&tmpdir).context("creating temporary directory")?;
 
     let nfpm_bin = if args.no_vendor {
         "nfpm".to_owned()
