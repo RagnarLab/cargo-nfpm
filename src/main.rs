@@ -1,6 +1,9 @@
+use std::process::Command;
+
 use anyhow::Context;
 use cargo_nfpm::cargo::{self, ProjectBuilder};
 use cargo_nfpm::generator::get_config_from_metadata;
+use cargo_nfpm::nfpm::download_nfpm;
 use cargo_nfpm::nfpm_schema::{ContentElement, FileInfo};
 use clap::Parser;
 
@@ -29,6 +32,15 @@ pub enum NfpmCommands {
     Package(PackageArgs),
 }
 
+#[derive(Debug, Clone, Copy, clap::ValueEnum)]
+pub enum OutputFormat {
+    Apk,
+    ArchLinux,
+    Deb,
+    Ipk,
+    Rpm,
+}
+
 #[derive(clap::Args, Debug)]
 pub struct PackageArgs {
     /// Package to build (see `cargo help pkgid`)
@@ -44,12 +56,20 @@ pub struct PackageArgs {
     profile: Option<String>,
 
     /// List of features to activate
-    #[arg(long, short, value_name = "FEATURES")]
+    #[arg(long, short = 'F', value_name = "FEATURES")]
     features: Option<Vec<String>>,
 
     /// Whether to skip the build.
     #[arg(long, action = clap::ArgAction::SetTrue)]
     no_build: bool,
+
+    /// Whether to skip downloading nFPM.
+    #[arg(long, action = clap::ArgAction::SetTrue)]
+    no_vendor: bool,
+
+    /// Output format.
+    #[arg(long, short)]
+    format: OutputFormat,
 
     /// Build options passed to `cargo build`
     build_options: Option<Vec<String>>,
@@ -68,6 +88,14 @@ fn main() -> anyhow::Result<()> {
         target.clone()
     } else {
         cargo::get_host_triple()?
+    };
+    let tmpdir = metadata.target_directory.join("tmp");
+
+    let nfpm_bin = if args.no_vendor {
+        "nfpm".to_owned()
+    } else {
+        download_nfpm(&tmpdir)?;
+        tmpdir.join("nfpm").to_string()
     };
 
     let package = metadata
@@ -114,24 +142,64 @@ fn main() -> anyhow::Result<()> {
     let mut config = get_config_from_metadata(&metadata, package, &triple)
         .context("create config from Cargo manifest")?;
 
-    let bin_content = ContentElement {
-        dst: format!("/usr/bin/{}", bin_target.name),
-        src: Some(binary_path.to_string()),
-        expand: Some(false),
-        file_info: Some(FileInfo {
-            group: None,
-            mode: Some(0o755),
-            mtime: None,
-            owner: None,
-        }),
-        packager: None,
-        confi_type: None,
+    let auto_add_binary = if let Some(contents) = &config.contents {
+        !contents.iter().any(|el| {
+            if let Some(src) = &el.src {
+                src == binary_path.as_str()
+            } else {
+                false
+            }
+        })
+    } else {
+        true
     };
 
-    config.contents = Some(vec![bin_content]);
+    if auto_add_binary {
+        let bin_content = ContentElement {
+            dst: format!("/usr/bin/{}", bin_target.name),
+            src: Some(binary_path.to_string()),
+            expand: Some(false),
+            file_info: Some(FileInfo {
+                group: None,
+                mode: Some(0o755),
+                mtime: None,
+                owner: None,
+            }),
+            packager: None,
+            confi_type: None,
+        };
+
+        if let Some(contents) = &mut config.contents {
+            contents.push(bin_content);
+        } else {
+            config.contents = Some(vec![bin_content]);
+        }
+    }
 
     let output = serde_yaml::to_string(&config).context("serializing config as YAML")?;
-    println!("{output}");
+    let config_path = tmpdir.join("nfpm.yml");
+    std::fs::write(&config_path, &output).context("writing nfpm.yml to disk")?;
 
-    Ok(())
+    let packager = match args.format {
+        OutputFormat::Apk => "apk",
+        OutputFormat::ArchLinux => "archlinux",
+        OutputFormat::Deb => "deb",
+        OutputFormat::Ipk => "ipk",
+        OutputFormat::Rpm => "rpm",
+    };
+    let mut cmd = Command::new(nfpm_bin);
+    cmd.arg("package")
+        .arg("--config")
+        .arg(config_path)
+        .arg("--packager")
+        .arg(packager)
+        .arg("--target")
+        .arg(tmpdir);
+
+    let res = cmd.status().context("running nfpm")?;
+    if res.success() {
+        return Ok(());
+    }
+
+    Err(anyhow::anyhow!("failed to build package"))
 }
