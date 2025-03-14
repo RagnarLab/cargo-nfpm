@@ -48,9 +48,9 @@ jobs:
         env:
           CC: aarch64-linux-gnu-gcc
           CXX: aarch64-linux-gnu-g++
-          LD: aarch64-linux-gnu-ld
+          LD: aarch64-linux-gnu-gcc
           AR: aarch64-linux-gnu-ar
-          RUSTFLAGS: -Clinker=aarch64-linux-gnu-ld
+          RUSTFLAGS: -Clinker=aarch64-linux-gnu-gcc
         if: startsWith(matrix.target, 'aarch64-unknown-linux')
       - run: cargo build --target ${{ matrix.target }} --release
         if: ${{ !startsWith(matrix.target, 'aarch64-unknown-linux') }}
