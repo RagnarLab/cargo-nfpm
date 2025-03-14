@@ -45,6 +45,14 @@ jobs:
         if: startsWith(matrix.target, 'aarch64-unknown-linux')
         run: sudo apt-get update && sudo apt-get install gcc-aarch64-linux-gnu
       - run: cargo build --target ${{ matrix.target }} --release
+        env:
+          CC: aarch64-linux-gnu-gcc
+          CXX: aarch64-linux-gnu-g++
+          LD: aarch64-linux-gnu-ld
+          AR: aarch64-linux-gnu-ar
+        if: startsWith(matrix.target, 'aarch64-unknown-linux')
+      - run: cargo build --target ${{ matrix.target }} --release
+        if: not startsWith(matrix.target, 'aarch64-unknown-linux')
       - name: Archive
         shell: bash
         run: |
