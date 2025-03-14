@@ -35,7 +35,8 @@ pub fn get_config_from_metadata(
     merge_base_config_with_package(package, &mut base_config)
         .context("merging config with manifest values")?;
 
-    let parsed = LlvmTriple::new(triple).context("parsing cargo target triple")?;
+    let parsed = LlvmTriple::new(triple)
+        .with_context(|| format!("parsing cargo target triple: {triple}"))?;
     base_config.arch = match format {
         OutputFormat::Apk => Some(parsed.to_apk_arch()?.to_owned()),
         OutputFormat::Archlinux => Some(parsed.to_archlinux_arch()?.to_owned()),

@@ -8,9 +8,10 @@ pub struct LlvmTriple {
 }
 
 impl LlvmTriple {
-    /// Triple must follow the following format:
+    /// Triple must follow either of the following formats:
     ///
-    /// `<arch><sub>-<vendor>-<sys>-<env>`.
+    /// * `<arch><sub>-<vendor>-<sys>-<env>` (e.g., `aarch64-unknown-linux-gnu`)
+    /// * `<arch><sub>-<vendor>-<sys>` (e.g., `aarch64-apple-darwin`)
     pub fn new<S>(triple: S) -> anyhow::Result<Self>
     where
         S: AsRef<str>,
@@ -21,7 +22,6 @@ impl LlvmTriple {
         let _arch = split.next().context("missing architecture component")?;
         let _vendor = split.next().context("missing vendor component")?;
         let _sys = split.next().context("missing sys component")?;
-        let _env = split.next().context("missing env component")?;
 
         Ok(Self { inner })
     }
