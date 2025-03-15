@@ -5,4 +5,5 @@ pub mod cargo_schema;
 pub mod generator;
 pub mod nfpm;
 pub mod nfpm_schema;
+pub mod strip;
 pub mod triple;

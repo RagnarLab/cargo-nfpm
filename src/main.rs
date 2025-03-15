@@ -5,6 +5,7 @@ use cargo_nfpm::cargo::{self, ProjectBuilder};
 use cargo_nfpm::generator::{get_config_from_metadata, OutputFormat};
 use cargo_nfpm::nfpm::download_nfpm;
 use cargo_nfpm::nfpm_schema::{ContentElement, FileInfo};
+use cargo_nfpm::strip::{strip_if_required, StripAction};
 use clap::Parser;
 
 #[derive(clap::Parser, Debug)]
@@ -64,6 +65,10 @@ pub struct PackageArgs {
     /// Package format.
     #[arg(long, short)]
     format: OutputFormat,
+
+    /// Strip action.
+    #[arg(long, short, default_value = "skip")]
+    strip: StripAction,
 
     /// Build options passed to `cargo build`
     build_options: Option<Vec<String>>,
@@ -133,6 +138,8 @@ fn main() -> anyhow::Result<()> {
 
         builder.build()?;
     }
+
+    strip_if_required(&binary_path, &triple, args.strip).context("stripping binary")?;
 
     let mut config = get_config_from_metadata(&metadata, package, &triple, args.format)
         .context("create config from Cargo manifest")?;
