@@ -3,20 +3,41 @@
 use std::process::{Command, Stdio};
 
 use anyhow::Context;
-use cargo_metadata::{Artifact, Message, Metadata};
+use camino::Utf8PathBuf;
+use cargo_metadata::{Artifact, Message};
 
-/// Retrieves the path to the current `Cargo.toml`.
-pub fn find_cargo_metadata() -> anyhow::Result<Metadata> {
-    let mut cmd = cargo_metadata::MetadataCommand::new();
-    cmd.no_deps();
-    let metadata = cmd.exec().context("failed to run `cargo metadata`")?;
-    Ok(metadata)
+#[derive(Debug, Clone)]
+pub struct Metadata {
+    inner: cargo_metadata::Metadata,
+}
+
+impl Metadata {
+    /// Retrieves the metadata of the current Cargo workspace / project.
+    pub fn get() -> anyhow::Result<Self> {
+        let mut cmd = cargo_metadata::MetadataCommand::new();
+        cmd.no_deps();
+        let inner = cmd.exec().context("failed to run `cargo metadata`")?;
+        Ok(Self { inner })
+    }
+
+    /// Retrieves Cargo `target` directory.
+    pub fn target_directory(&self) -> Utf8PathBuf {
+        if let Ok(target_dir) = std::env::var("CARGO_TARGET_DIR") {
+            return Utf8PathBuf::from(target_dir);
+        }
+
+        self.inner.target_directory.clone()
+    }
+
+    /// Get the workspace's root package of this metadata instance.
+    pub fn root_package(&self) -> Option<&cargo_metadata::Package> {
+        self.inner.root_package()
+    }
 }
 
 /// Find the host triple by invoking `cargo -vV`.
 pub fn get_host_triple() -> anyhow::Result<String> {
-    let cargo_bin = std::env::var("CARGO").unwrap_or("cargo".to_owned());
-    let out = Command::new(cargo_bin)
+    let out = cargo_cmd()
         .arg("-vV")
         .output()
         .context("calling `cargo -vV`")?;
@@ -77,14 +98,13 @@ impl ProjectBuilder {
         self
     }
 
-    pub fn with_extra_args(mut self, extra_args: Vec<String>) -> Self
-    {
+    pub fn with_extra_args(mut self, extra_args: Vec<String>) -> Self {
         self.extra_args = Some(extra_args);
         self
     }
 
     pub fn build(self) -> anyhow::Result<Vec<Artifact>> {
-        let mut command = Command::new("cargo");
+        let mut command = cargo_cmd();
 
         command
             .arg("build")
@@ -152,4 +172,17 @@ impl ProjectBuilder {
             status.code().unwrap_or(-1)
         ))
     }
+}
+
+pub fn cargo_cmd() -> Command {
+    let cargo_bin = std::env::var("CARGO").unwrap_or("cargo".to_owned());
+    let mut cmd = Command::new(cargo_bin);
+    if let Ok(term_color) = std::env::var("CARGO_TERM_COLOR") {
+        cmd.env("CARGO_TERM_COLOR", term_color);
+    }
+    if let Ok(target_dir) = std::env::var("CARGO_TARGET_DIR") {
+        cmd.env("CARGO_TARGET_DIR", target_dir);
+    }
+
+    cmd
 }

@@ -11,6 +11,7 @@
 
 </div>
 
+
 ## Installation
 
 To install the latest stable release:
@@ -25,6 +26,7 @@ Or install the latest development version:
 cargo install --locked --git https://github.com/RagnarLab/cargo-nfpm
 ```
 
+
 ## Usage
 
 To create a `.deb`/`.rpm`/`.apk` or `.ipk` from a Cargo Rust project requires
@@ -35,6 +37,7 @@ $ cargo nfpm package -f deb
 using deb packager...
 created package: /home/ubuntu/example/target/tmp/example_1.4.2-1_amd64.deb
 ```
+
 
 ## Full Options
 
@@ -86,6 +89,25 @@ Options:
   -V, --version
           Print version
 ```
+
+
+## Environment Variables
+
+cargo-nfpm reads some of the options also as environment variables. Passing the
+command-line flag overrides the values from the environment.
+
+|       Variable       |                        Description                        |
+| -------------------- | --------------------------------------------------------- |
+| `CARGO_NFPM_BIN`     | Path to the `nfpm` binary if `--no-vendor` is passed      |
+
+The following environment variables to emulate Cargo's behavior.
+
+|       Variable       |                        Description                        |
+| -------------------- | --------------------------------------------------------- |
+| `CARGO`              | Path to the `cargo` binary                                |
+| `CARGO_TERM_COLOR`   | Default color mode: `always`, `auto`, or `never`          |
+| `CARGO_TARGET_DIR`   | Where to place generated artifacts                        |
+
 
 ## Support
 

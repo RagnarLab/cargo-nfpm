@@ -2,7 +2,7 @@ use std::process::Command;
 
 use anyhow::Context;
 use cargo_nfpm::cargo::{self, ProjectBuilder};
-use cargo_nfpm::generator::{get_config_from_metadata, OutputFormat};
+use cargo_nfpm::generator::{get_config_from_package, OutputFormat};
 use cargo_nfpm::nfpm::download_nfpm;
 use cargo_nfpm::nfpm_schema::{ContentElement, FileInfo};
 use cargo_nfpm::strip::{strip_if_required, StripAction};
@@ -82,17 +82,21 @@ fn main() -> anyhow::Result<()> {
         },
     };
 
-    let metadata = cargo::find_cargo_metadata()?;
+    let metadata = cargo::Metadata::get()?;
     let triple = if let Some(target) = &args.target {
         target.clone()
     } else {
         cargo::get_host_triple()?
     };
-    let tmpdir = metadata.target_directory.join("tmp");
+    let tmpdir = metadata.target_directory().join("tmp");
     std::fs::create_dir_all(&tmpdir).context("creating temporary directory")?;
 
     let nfpm_bin = if args.no_vendor {
-        "nfpm".to_owned()
+        if let Ok(bin_path) = std::env::var("CARGO_NFPM_BIN") {
+            bin_path
+        } else {
+            "nfpm".to_owned()
+        }
     } else {
         download_nfpm(&tmpdir)?;
         tmpdir.join("nfpm").to_string()
@@ -115,9 +119,9 @@ fn main() -> anyhow::Result<()> {
     };
 
     let target_path = if let Some(target) = &args.target {
-        metadata.target_directory.join(target).join(&profile)
+        metadata.target_directory().join(target).join(&profile)
     } else {
-        metadata.target_directory.join(&profile)
+        metadata.target_directory().join(&profile)
     };
 
     let binary_path = target_path.join(&bin_target.name);
@@ -145,7 +149,7 @@ fn main() -> anyhow::Result<()> {
 
     strip_if_required(&binary_path, &triple, args.strip).context("stripping binary")?;
 
-    let mut config = get_config_from_metadata(&metadata, package, &triple, args.format)
+    let mut config = get_config_from_package(package, &triple, args.format)
         .context("create config from Cargo manifest")?;
 
     let auto_add_binary = if let Some(contents) = &config.contents {

@@ -15,8 +15,7 @@ pub enum OutputFormat {
     Rpm,
 }
 
-pub fn get_config_from_metadata(
-    _metadata: &cargo_metadata::Metadata,
+pub fn get_config_from_package(
     package: &cargo_metadata::Package,
     triple: &str,
     format: OutputFormat,
