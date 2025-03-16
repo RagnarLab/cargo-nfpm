@@ -14,7 +14,7 @@ pub enum StripAction {
     KeepLineTables,
     /// Strip off all debug information. Information is lost if not preserved otherwise.
     Strip,
-    /// Debug information is separated.
+    /// Debug information is saved in a separate .debug file.
     Separate,
 }
 

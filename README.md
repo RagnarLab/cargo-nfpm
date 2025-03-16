@@ -4,11 +4,12 @@
     <strong>A simple and lightweight Cargo plugin for using <a href="https://nfpm.goreleaser.com/">nFPM</a> from any Rust project.</strong>
   </p>
   <p>
-</div>
 
 [![Build Status](https://github.com/ragnarlab/cargo-nfpm/actions/workflows/ci.yml/badge.svg)](https://github.com/ragnarlab/cargo-nfpm/actions)
 [![Crates.io](https://img.shields.io/crates/v/cargo-nfpm.svg)](https://crates.io/crates/cargo-nfpm)
 ![License](https://img.shields.io/crates/l/cargo-nfpm.svg)
+
+</div>
 
 ## Installation
 
@@ -47,20 +48,41 @@ Arguments:
 Options:
   -p, --package <SPEC>
           Package to build (see `cargo help pkgid`)
+
       --target <TRIPLE>
           Build for the target triple
+
       --profile <PROFILE-NAME>
           Build artifacts with the specified profile
+
   -F, --features <FEATURES>
           List of features to activate
+
       --no-build
           Whether to skip the build
+
       --no-vendor
           Whether to skip downloading nFPM
+
   -f, --format <FORMAT>
-          Output format [possible values: apk, arch-linux, deb, ipk, rpm]
+          Package format
+
+          [possible values: apk, archlinux, deb, ipk, rpm]
+
+  -s, --strip <STRIP>
+          Strip action
+
+          [default: skip]
+
+          Possible values:
+          - skip:             Don't do anything. Default
+          - keep-line-tables: Keep only line-tables debug information. This is the minimum requirement for stacktraces
+          - strip:            Strip off all debug information. Information is lost if not preserved otherwise
+          - separate:         Debug information is saved in a separate .debug file
+
   -h, --help
-          Print help
+          Print help (see a summary with '-h')
+
   -V, --version
           Print version
 ```
