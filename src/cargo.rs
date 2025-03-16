@@ -37,6 +37,7 @@ pub struct ProjectBuilder {
     target: Option<String>,
     profile: Option<String>,
     features: Option<Vec<String>>,
+    extra_args: Option<Vec<String>>,
 }
 
 impl ProjectBuilder {
@@ -76,6 +77,12 @@ impl ProjectBuilder {
         self
     }
 
+    pub fn with_extra_args(mut self, extra_args: Vec<String>) -> Self
+    {
+        self.extra_args = Some(extra_args);
+        self
+    }
+
     pub fn build(self) -> anyhow::Result<Vec<Artifact>> {
         let mut command = Command::new("cargo");
 
@@ -100,6 +107,10 @@ impl ProjectBuilder {
                 command.arg("-F");
                 command.arg(feature);
             }
+        }
+
+        if let Some(extra_args) = &self.extra_args {
+            command.args(extra_args);
         }
 
         let mut child = command

@@ -136,6 +136,10 @@ fn main() -> anyhow::Result<()> {
             }
         }
 
+        if let Some(extra_args) = &args.build_options {
+            builder = builder.with_extra_args(extra_args.clone());
+        }
+
         builder.build()?;
     }
 
