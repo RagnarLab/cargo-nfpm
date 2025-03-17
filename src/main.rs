@@ -103,7 +103,7 @@ fn main() -> anyhow::Result<()> {
     };
 
     let package = metadata
-        .root_package()
+        .root_package(args.package.as_deref())
         .context("couldn't find root package")?;
     let bin_target = package
         .targets

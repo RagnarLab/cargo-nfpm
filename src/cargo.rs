@@ -30,8 +30,17 @@ impl Metadata {
     }
 
     /// Get the workspace's root package of this metadata instance.
-    pub fn root_package(&self) -> Option<&cargo_metadata::Package> {
-        self.inner.root_package()
+    pub fn root_package(&self, spec: Option<&str>) -> Option<&cargo_metadata::Package> {
+        if let Some(root) = self.inner.root_package() {
+            Some(root)
+        } else {
+            let spec = spec?;
+            self.inner
+                .workspace_packages()
+                .iter()
+                .find(|pkg| pkg.name == spec)
+                .map(|v| &**v)
+        }
     }
 }
 
