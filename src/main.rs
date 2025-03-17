@@ -204,7 +204,7 @@ fn main() -> anyhow::Result<()> {
     let target = if let Some(output) = &args.output {
         output.clone()
     } else {
-        tmpdir.to_string()
+        target_path.to_string()
     };
     let mut cmd = Command::new(nfpm_bin);
     cmd.arg("package")
