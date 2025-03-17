@@ -15,7 +15,7 @@ pub enum StripAction {
     /// Strip off all debug information. Information is lost if not preserved otherwise.
     Strip,
     /// Debug information is saved in a separate .debug file.
-    Separate,
+    Split,
 }
 
 pub fn strip_if_required<P>(
@@ -43,7 +43,7 @@ where
             Ok(())
         }
 
-        StripAction::Separate => {
+        StripAction::Split => {
             let debug_sym_path = binary_path.as_ref().with_extension("debug");
 
             let status = objcopy(target_triple)?
@@ -58,11 +58,18 @@ where
             }
 
             let symbol_name = debug_sym_path.file_name().context("missing filename")?;
+            // We will need to `chdir` to the `target` directory because the `.gnu_debuglink` will
+            // otherwise not use the relative path.
             let status = objcopy(target_triple)?
+                .current_dir(
+                    debug_sym_path
+                        .parent()
+                        .context("symbol path not pointing to file")?,
+                )
                 .arg("--strip-debug")
                 .arg("--strip-unneeded")
-                .arg("--remove-section=\".gnu_debuglink\"")
-                .arg(format!("--add-gnu-debuglink=\"{symbol_name}\""))
+                .arg("--remove-section=.gnu_debuglink")
+                .arg(format!("--add-gnu-debuglink={symbol_name}"))
                 .arg(binary_path.as_ref().as_str())
                 .status()
                 .context("calling llvm-objcopy")?;
