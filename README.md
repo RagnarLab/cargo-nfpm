@@ -47,6 +47,11 @@ The following configuration (from `test-projects/single-project`) ...
 
 ```toml
 # Cargo.toml
+[package]
+name = "single-project"
+version = "0.1.0"
+authors = ["Arvid Gerstmann <github@arvid.io>"]
+edition = "2024"
 
 [package.metadata.nfpm]
 epoch = "2"
