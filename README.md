@@ -85,7 +85,9 @@ in the `package` section of your `Cargo.toml`.
 The types are generated from the latest `nfpm` JSON schema and will always
 track the latest version.
 
-All possible options are demonstrated in [all.toml](./fixtures/all.toml).
+All possible options are demonstrated in [all.toml](./fixtures/all.toml) which
+mirrors the [reference configuration from
+nfpm](https://nfpm.goreleaser.com/configuration/).
 
 
 ## Full Options
