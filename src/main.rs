@@ -54,6 +54,10 @@ pub struct PackageArgs {
     #[arg(long, short = 'F', value_name = "FEATURES")]
     features: Option<Vec<String>>,
 
+    /// Where to save the generated package.
+    #[arg(long, short, value_name = "PATH")]
+    output: Option<String>,
+
     /// Whether to skip the build.
     #[arg(long, action = clap::ArgAction::SetTrue)]
     no_build: bool,
@@ -197,6 +201,11 @@ fn main() -> anyhow::Result<()> {
         OutputFormat::Ipk => "ipk",
         OutputFormat::Rpm => "rpm",
     };
+    let target = if let Some(output) = &args.output {
+        output.clone()
+    } else {
+        tmpdir.to_string()
+    };
     let mut cmd = Command::new(nfpm_bin);
     cmd.arg("package")
         .arg("--config")
@@ -204,12 +213,14 @@ fn main() -> anyhow::Result<()> {
         .arg("--packager")
         .arg(packager)
         .arg("--target")
-        .arg(tmpdir);
+        .arg(target);
 
     let res = cmd.status().context("running nfpm")?;
     if res.success() {
         return Ok(());
     }
 
-    Err(anyhow::anyhow!("failed to build package"))
+    Err(anyhow::anyhow!(
+        "failed to build package. check stdout/stderr"
+    ))
 }
