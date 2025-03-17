@@ -1,6 +1,7 @@
 [package]
 name = "single-project"
 version = "0.1.0"
+authors = ["Arvid Gerstmann <github@arvid.io>"]
 edition = "2024"
 
 [dependencies]

@@ -38,6 +38,55 @@ using deb packager...
 created package: /home/ubuntu/example/target/tmp/example_1.4.2-1_amd64.deb
 ```
 
+## Config
+
+Instead of configuring `nfpm` via it's own yaml configuration (`nfpm.yml`) the
+entire configuration is contained in the extra metadata in `Cargo.toml`.
+
+The following configuration (from `test-projects/single-project`) ...
+
+```toml
+# Cargo.toml
+
+[package.metadata.nfpm]
+epoch = "2"
+contents = [
+    { src = "LICENSE", dst = "/usr/share/licenses/single-project/LICENSE" },
+]
+```
+
+... will be automatically translated into:
+
+```yaml
+# nfpm.yml
+
+name: single-project
+arch: amd64
+version: 0.1.0
+contents:
+- dst: /usr/share/licenses/single-project/LICENSE
+  src: LICENSE
+- dst: /usr/bin/single-project
+  expand: false
+  file_info:
+    mode: 493
+  src: /home/ubuntu/cargo-nfpm/test-projects/single-project/target/release/single-project
+epoch: '2'
+maintainer: Arvid Gerstmann <github@arvid.io>
+platform: linux
+priority: extra
+release: '1'
+section: default
+```
+
+With the necessary fields already filled out with the general metdata contained
+in the `package` section of your `Cargo.toml`.
+
+The types are generated from the latest `nfpm` JSON schema and will always
+track the latest version.
+
+All possible options are demonstrated in [all.toml](./fixtures/all.toml).
+
 
 ## Full Options
 
