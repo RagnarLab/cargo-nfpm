@@ -1,8 +1,8 @@
 [package]
 name = "cargo-nfpm"
-version = "0.1.0"
-edition = "2024"
-rust-version = "1.85.0"
+version = "0.1.1"
+edition = "2021"
+rust-version = "1.80.0"
 description = "A simple and lightweight Cargo plugin for using nFPM from Any Rust project"
 license = "MIT OR Apache-2.0"
 authors = ["Arvid Gerstmann <github@arvid.io>"]
