@@ -5,6 +5,8 @@ use std::process::Command;
 use anyhow::Context;
 use camino::{Utf8Path, Utf8PathBuf};
 
+use crate::cargo::get_host_triple;
+
 #[derive(Debug, Default, Clone, Copy, PartialEq, clap::ValueEnum)]
 pub enum StripAction {
     /// Don't do anything. Default.
@@ -83,20 +85,33 @@ where
 }
 
 fn objcopy(target_triple: &str) -> anyhow::Result<Command> {
-    let out = Command::new("rustc")
-        .args(["--print", "sysroot"])
-        .output()
-        .context("finding rustc sysroot")?;
-    if !out.status.success() {
-        return Err(anyhow::anyhow!("failed to find rustc sysroot"));
+    fn get_llvm_tools_path(target_triple: &str) -> anyhow::Result<Utf8PathBuf> {
+        let out = Command::new("rustc")
+            .args(["--print", "sysroot"])
+            .output()
+            .context("finding rustc sysroot")?;
+        if !out.status.success() {
+            return Err(anyhow::anyhow!("failed to find rustc sysroot"));
+        }
+
+        let outstr = String::from_utf8(out.stdout).context("invalid utf8")?;
+        let sysroot = Utf8PathBuf::from(outstr.trim());
+        let path = sysroot.join("lib/rustlib").join(target_triple).join("bin");
+        Ok(path)
     }
 
-    let outstr = String::from_utf8(out.stdout).context("invalid utf8")?;
-    let sysroot = Utf8PathBuf::from(outstr.trim());
-    let objcopy_path = sysroot
-        .join("lib/rustlib")
-        .join(target_triple)
-        .join("bin/llvm-objcopy");
+    let bin_path = get_llvm_tools_path(target_triple)?;
+    if bin_path.is_dir() {
+        return Ok(Command::new(bin_path.join("llvm-objcopy")));
+    }
 
-    Ok(Command::new(objcopy_path))
+    let host_triple = get_host_triple()?;
+    let bin_path = get_llvm_tools_path(&host_triple)?;
+    if bin_path.is_dir() {
+        return Ok(Command::new(bin_path.join("llvm-objcopy")));
+    }
+
+    Err(anyhow::anyhow!(
+        "couldn't find llvm-objcopy. is the rustup component `llvm-tools` installed?"
+    ))
 }
