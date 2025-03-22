@@ -117,6 +117,9 @@ Options:
   -F, --features <FEATURES>
           List of features to activate
 
+  -o, --output <PATH>
+          Where to save the generated package
+
       --no-build
           Whether to skip the build
 
@@ -137,7 +140,7 @@ Options:
           - skip:             Don't do anything. Default
           - keep-line-tables: Keep only line-tables debug information. This is the minimum requirement for stacktraces
           - strip:            Strip off all debug information. Information is lost if not preserved otherwise
-          - separate:         Debug information is saved in a separate .debug file
+          - split:            Debug information is saved in a separate .debug file
 
   -h, --help
           Print help (see a summary with '-h')
