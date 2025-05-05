@@ -29,7 +29,9 @@
 
           devShells =
             let
-              rust-toolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+              rust-toolchain = pkgs.rust-bin.stable.latest.default.override {
+                extensions = [ "rust-analyzer" ];
+              };
             in
             {
               default =
@@ -37,8 +39,7 @@
                   package = pkgs.callPackage (import ./nix/package.nix) { };
                 in
                 pkgs.mkShell {
-                  packages = with pkgs; [
-                  ] ++ [ rust-toolchain ];
+                  packages = [ rust-toolchain ];
 
                   buildInputs = package.buildInputs;
                   nativeBuildInputs = package.nativeBuildInputs;
