@@ -746,6 +746,10 @@
 						"type": "string",
 						"title": "architecture in rpm nomenclature"
 					},
+					"buildhost": {
+						"type": "string",
+						"title": "host name of the build environment"
+					},
 					"scripts": {
 						"$ref": "#/$defs/RPMScripts",
 						"title": "rpm-specific scripts"
