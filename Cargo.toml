@@ -1,6 +1,6 @@
 [package]
 name = "cargo-nfpm"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 rust-version = "1.79.0"
 description = "A simple and lightweight Cargo plugin for using nFPM from Any Rust project"
