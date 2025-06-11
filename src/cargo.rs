@@ -38,8 +38,8 @@ impl Metadata {
             self.inner
                 .workspace_packages()
                 .iter()
-                .find(|pkg| pkg.name == spec)
-                .map(|v| &**v)
+                .find(|&&pkg| pkg.name.as_ref() == spec)
+                .map(|&v| &*v)
         }
     }
 }

@@ -74,7 +74,7 @@ fn merge_base_config_with_package(
 ) -> anyhow::Result<()> {
     // Only apply defaults if override isn't set.
     if config.name.is_none() {
-        config.name = Some(package.name.clone());
+        config.name = Some(package.name.as_ref().to_owned());
     }
     if config.version.is_none() {
         config.version = Some(package.version.to_string());
