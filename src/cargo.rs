@@ -39,7 +39,7 @@ impl Metadata {
                 .workspace_packages()
                 .iter()
                 .find(|&&pkg| pkg.name.as_ref() == spec)
-                .map(|&v| &*v)
+                .map(|v| &**v)
         }
     }
 }
