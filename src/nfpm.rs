@@ -48,9 +48,9 @@ where
         "https://github.com/goreleaser/nfpm/releases/download/v{NFPM_VERSION}/{archive_name}"
     );
 
-    let mut res = ureq::get(url)
+    let mut res = ureq::get(&url)
         .call()
-        .context("downloading nfpm from Github.com")?;
+        .with_context(|| format!("downloading nfpm from {url}"))?;
 
     let body: &mut ureq::Body = res.body_mut();
     let archive_path = outdir.as_ref().join("nfpm.tar.gz");
@@ -98,9 +98,7 @@ where
         let path = entry.path().context("retrieving entry path")?;
         if let Some(file_name) = path.file_name() {
             if file_name.to_str() == Some("nfpm") {
-                entry
-                    .unpack(&binary_path)
-                    .context("unpacking nfpm")?;
+                entry.unpack(&binary_path).context("unpacking nfpm")?;
                 return Ok(());
             }
         }
