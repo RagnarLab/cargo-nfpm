@@ -68,7 +68,7 @@ fn roundtrip() {
             file_info: None,
             packager: Some("deb".to_owned()),
             src: Some("/home/ubuntu/cargo-nfpm/target/release/cargo-nfpm".to_owned()),
-            confi_type: Some(Type::Empty),
+            list_connections_result_type: Some(Type::Empty),
         }]),
 
         deb: Some(DebSpecificSettings {

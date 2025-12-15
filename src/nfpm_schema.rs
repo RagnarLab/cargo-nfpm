@@ -9,9 +9,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Config {
     // Non optional.
-    pub name: String,
-    pub arch: String,
-    pub version: String,
+    pub name: Option<String>,
+    pub arch: Option<String>,
+    pub version: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub apk: Option<ApkSpecificSettings>,
