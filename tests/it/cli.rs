@@ -1,4 +1,5 @@
 //! Integration tests for the cargo-nfpm cli.
+#![allow(deprecated)]
 
 #[test]
 fn print_help() {
