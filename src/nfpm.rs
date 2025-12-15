@@ -2,6 +2,7 @@
 
 use std::fs::File;
 use std::io::{Read as _, Write as _};
+use std::path::PathBuf;
 
 use anyhow::Context;
 use camino::Utf8Path;
@@ -25,12 +26,12 @@ where
     }
     println!("downloading nfpm...");
 
-    let os = if cfg!(target_os = "linux") {
-        "Linux"
+    let (os, filetype) = if cfg!(target_os = "linux") {
+        ("Linux", "tar.gz")
     } else if cfg!(target_os = "macos") {
-        "Darwin"
+        ("Darwin", "tar.gz")
     } else if cfg!(target_os = "windows") {
-        "Windows"
+        ("Windows", "zip")
     } else {
         return Err(anyhow::anyhow!("unsupported operating system"));
     };
@@ -43,7 +44,7 @@ where
         return Err(anyhow::anyhow!("unsupported system architecture"));
     };
 
-    let archive_name = format!("nfpm_{NFPM_VERSION}_{os}_{arch}.tar.gz");
+    let archive_name = format!("nfpm_{NFPM_VERSION}_{os}_{arch}.{filetype}");
     let url = format!(
         "https://github.com/goreleaser/nfpm/releases/download/v{NFPM_VERSION}/{archive_name}"
     );
@@ -53,9 +54,9 @@ where
         .with_context(|| format!("downloading nfpm from {url}"))?;
 
     let body: &mut ureq::Body = res.body_mut();
-    let archive_path = outdir.as_ref().join("nfpm.tar.gz");
-    let mut archivefp =
-        std::fs::File::create(&archive_path).context("creating file: nfpm.tar.gz")?;
+    let archive_path = outdir.as_ref().join(format!("nfpm.{filetype}"));
+    let mut archivefp = std::fs::File::create(&archive_path)
+        .with_context(|| format!("creating file: nfpm.{filetype}"))?;
     let mut buf = [0_u8; 16 * 1024];
     let mut reader = body.as_reader();
     let mut hasher = sha2::Sha256::new();
@@ -88,20 +89,39 @@ where
         .context("flushing temporary archive to disk")?;
     let archivefp = File::open(&archive_path).context("opening nfpm.tar.gz for reading")?;
 
-    let tar = GzDecoder::new(archivefp);
-    let mut archive = Archive::new(tar);
-    let entries = archive
-        .entries()
-        .context("reading tar.gz archive entries")?;
-    for entry in entries {
-        let mut entry = entry.context("reading archive entry")?;
-        let path = entry.path().context("retrieving entry path")?;
-        if let Some(file_name) = path.file_name() {
-            if file_name.to_str() == Some("nfpm") {
-                entry.unpack(&binary_path).context("unpacking nfpm")?;
-                return Ok(());
+    if filetype == "tar.gz" {
+        let tar = GzDecoder::new(archivefp);
+        let mut archive = Archive::new(tar);
+        let entries = archive
+            .entries()
+            .context("reading tar.gz archive entries")?;
+        for entry in entries {
+            let mut entry = entry.context("reading archive entry")?;
+            let path = entry.path().context("retrieving entry path")?;
+            if let Some(file_name) = path.file_name() {
+                if file_name.to_str() == Some("nfpm") {
+                    entry.unpack(&binary_path).context("unpacking nfpm")?;
+                    return Ok(());
+                }
             }
         }
+    } else if filetype == "zip" {
+        let mut archive = zip::ZipArchive::new(archivefp).context("reading zip archive")?;
+        let n = archive.len();
+        for i in 0..n {
+            let mut entry = archive.by_index(i).context("reading zip entry")?;
+            let path = PathBuf::from(entry.name());
+            if let Some(file_name) = path.file_name() {
+                if file_name.to_str() == Some("nfpm") {
+                    let mut output_file =
+                        File::create_new(&binary_path).context("opening output file")?;
+                    std::io::copy(&mut entry, &mut output_file).context("writing nfpm to disk")?;
+                    return Ok(());
+                }
+            }
+        }
+    } else {
+        return Err(anyhow::anyhow!("unsupported filetype: {filetype}"));
     }
 
     Err(anyhow::anyhow!("nfpm binary not found"))
