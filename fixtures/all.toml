@@ -125,6 +125,7 @@ Foo = "Bar"
 # RPM overrides
 [package.metadata.nfpm.rpm]
 arch = "x86_64"
+buildhost = "x86_64"
 compression = "gzip"
 group = "Unspecified"
 packager = "Arvid Gerstmann <github@arvid.io>"

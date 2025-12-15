@@ -9,9 +9,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Config {
     // Non optional.
-    pub name: Option<String>,
-    pub arch: Option<String>,
-    pub version: Option<String>,
+    pub name: String,
+    pub arch: String,
+    pub version: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub apk: Option<ApkSpecificSettings>,
@@ -140,7 +140,19 @@ pub struct ContentElement {
     pub src: Option<String>,
     #[serde(rename = "type")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub confi_type: Option<Type>,
+    pub list_connections_result_type: Option<Type>,
+}
+
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
+pub struct FileInfo {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub group: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mode: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mtime: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub owner: Option<String>,
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
@@ -156,18 +168,6 @@ pub enum Type {
     Ghost,
     Symlink,
     Tree,
-}
-
-#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
-pub struct FileInfo {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub group: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub mode: Option<i64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub mtime: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub owner: Option<String>,
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
@@ -197,6 +197,7 @@ pub enum DebCompression {
     Gzip,
     None,
     Xz,
+    Zstd,
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
@@ -225,10 +226,12 @@ pub struct Signature {
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "kebab-case")]
 pub enum MethodRole {
     #[default]
     Debsign,
+    #[serde(rename = "dpkg-sig")]
+    DpkgSig,
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
@@ -323,6 +326,8 @@ pub struct RpmSpecificSettings {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub arch: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub buildhost: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub compression: Option<RpmCompression>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub group: Option<String>,
@@ -345,6 +350,7 @@ pub enum RpmCompression {
     Gzip,
     Lzma,
     Xz,
+    Zstd,
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]

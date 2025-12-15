@@ -121,6 +121,7 @@ fn roundtrip() {
 
         rpm: Some(RpmSpecificSettings {
             arch: Some("x86_64".to_owned()),
+            buildhost: Some("x86_64".to_owned()),
             compression: Some(RpmCompression::Gzip),
             group: Some("Unspecified".to_owned()),
             packager: Some("Arvid Gerstmann <github@arvid.io>".to_owned()),
