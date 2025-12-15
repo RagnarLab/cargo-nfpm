@@ -112,7 +112,7 @@ where
             let mut entry = archive.by_index(i).context("reading zip entry")?;
             let path = PathBuf::from(entry.name());
             if let Some(file_name) = path.file_name() {
-                if file_name.to_str() == Some("nfpm") {
+                if file_name.to_str() == Some("nfpm") || file_name.to_str() == Some("nfpm.exe") {
                     let mut output_file =
                         File::create_new(&binary_path).context("opening output file")?;
                     std::io::copy(&mut entry, &mut output_file).context("writing nfpm to disk")?;
