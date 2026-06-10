@@ -155,10 +155,8 @@ impl ProjectBuilder {
                 Message::CompilerMessage(_msg) => {
                     // println!("{:?}", msg);
                 }
-                Message::CompilerArtifact(artifact) => {
-                    if artifact.target.is_bin() {
-                        artifacts.push(artifact);
-                    }
+                Message::CompilerArtifact(artifact) if artifact.target.is_bin() => {
+                    artifacts.push(artifact);
                 }
                 Message::BuildScriptExecuted(_script) => {
                     // println!("{:?}", script);
