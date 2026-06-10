@@ -78,6 +78,7 @@ preupgrade = "./scripts/preupgrade.sh"
 # Deb overrides
 [package.metadata.nfpm.deb]
 arch = "amd64"
+arch_variant = "amd64v1"
 breaks = ["installation-will-fail-if-this-is-installed"]
 compression = "gzip"
 predepends = ["predepends"]
@@ -140,3 +141,42 @@ verify = "./scripts/verify.sh"
 [package.metadata.nfpm.rpm.signature]
 key_file = "key.gpg"
 key_id = "012345ABCDEF"
+
+# msix overrides
+[package.metadata.nfpm.msix]
+arch = "x64"
+publisher = "CN=MyCompany, O=MyCompany, C=US"
+
+[package.metadata.nfpm.msix.identity]
+resource_id = ""
+
+[package.metadata.nfpm.msix.properties]
+display_name = "My Application"
+publisher_display_name = "My Company"
+logo = "Assets/logo.png"
+
+[[package.metadata.nfpm.msix.applications]]
+id = "App"
+executable = "app/myapp.exe"
+entry_point = "Windows.FullTrustApplication"
+
+[package.metadata.nfpm.msix.applications.visual_elements]
+display_name = "My Application"
+description = "My application description"
+background_color = "transparent"
+square150x150_logo = "Assets/Square150x150Logo.png"
+square44x44_logo = "Assets/Square44x44Logo.png"
+
+[[package.metadata.nfpm.msix.dependencies.target_device_families]]
+name = "Windows.Desktop"
+min_version = "10.0.17763.0"
+max_version_tested = "10.0.22621.0"
+
+[package.metadata.nfpm.msix.capabilities]
+capabilities = [ "internetClient" ]
+device_capabilities = [ "microphone" ]
+restricted = [ "broadFileSystemAccess" ]
+
+[package.metadata.nfpm.msix.signature]
+pfx_file = "certificate.pfx"
+

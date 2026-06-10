@@ -5,12 +5,15 @@ use std::path::PathBuf;
 
 use cargo_nfpm::cargo_schema::CargoManifest;
 use cargo_nfpm::nfpm_schema::{
-    Alternative, ApkScripts, ApkSignature, ApkSpecificSettings, ArchlinuxSpecificScripts,
-    ArchlinuxSpecificSettings, Config, ContentElement, DebCompression, DebSpecificSettings,
-    IpkSpecificSettings, MethodRole, OverrideValue, RpmCompression, RpmSignature,
-    RpmSpecificScripts, RpmSpecificSettings, Scripts, ScriptsToExecute, Signature, SignerRole,
-    Triggers, Type, VersionSchema,
+    Alternative, ApkScripts, ApkSignature, ApkSpecificSettings, ApplicationsInThePackage,
+    ArchlinuxSpecificScripts, ArchlinuxSpecificSettings, Config, ContentElement, DebCompression,
+    DebSpecificSettings, IpkSpecificSettings, MethodRole, MsixSignature, MsixSpecificSettings,
+    OverrideValue, PackageCapabilities, PackageIdentity, PackageProperties, RpmCompression,
+    RpmSignature, RpmSpecificScripts, RpmSpecificSettings, Scripts, ScriptsToExecute, Signature,
+    SignerRole, TargetDeviceFamilies, TargetDeviceFamilyElement, Triggers, Type, VersionSchema,
+    VisualElements,
 };
+use pretty_assertions::assert_eq;
 
 #[test]
 fn roundtrip() {
@@ -68,13 +71,13 @@ fn roundtrip() {
             file_info: None,
             packager: Some("deb".to_owned()),
             src: Some("/home/ubuntu/cargo-nfpm/target/release/cargo-nfpm".to_owned()),
-            list_connections_result_type: Some(Type::Empty),
+            confi_type: Some(Type::Empty),
         }]),
 
         deb: Some(DebSpecificSettings {
             arch: Some("amd64".to_owned()),
             breaks: Some(vec![
-                "installation-will-fail-if-this-is-installed".to_owned()
+                "installation-will-fail-if-this-is-installed".to_owned(),
             ]),
             compression: Some(DebCompression::Gzip),
             fields: Some(HashMap::from([(
@@ -102,6 +105,7 @@ fn roundtrip() {
                 interest_await: Some(vec!["interest_await-trigger-name".to_owned()]),
                 interest_noawait: Some(vec!["interest_noawait-trigger-name".to_owned()]),
             }),
+            arch_variant: Some("amd64v1".to_owned()),
         }),
 
         ipk: Some(IpkSpecificSettings {
@@ -161,6 +165,47 @@ fn roundtrip() {
             scripts: Some(ArchlinuxSpecificScripts {
                 postupgrade: Some("./scripts/postupgrade.sh".to_owned()),
                 preupgrade: Some("./scripts/preupgrade.sh".to_owned()),
+            }),
+        }),
+
+        msix: Some(MsixSpecificSettings {
+            applications: vec![ApplicationsInThePackage {
+                id: "App".to_owned(),
+                entry_point: Some("Windows.FullTrustApplication".to_owned()),
+                executable: "app/myapp.exe".to_owned(),
+                visual_elements: Some(VisualElements {
+                    background_color: Some("transparent".to_owned()),
+                    description: Some("My application description".to_owned()),
+                    display_name: Some("My Application".to_owned()),
+                    square150_x150_logo: Some("Assets/Square150x150Logo.png".to_owned()),
+                    square44_x44_logo: Some("Assets/Square44x44Logo.png".to_owned()),
+                }),
+            }],
+            arch: Some("x64".to_owned()),
+            capabilities: Some(PackageCapabilities {
+                capabilities: Some(vec!["internetClient".to_owned()]),
+                device_capabilities: Some(vec!["microphone".to_owned()]),
+                restricted: Some(vec!["broadFileSystemAccess".to_owned()]),
+            }),
+            dependencies: Some(TargetDeviceFamilies {
+                target_device_families: Some(vec![TargetDeviceFamilyElement {
+                    name: "Windows.Desktop".to_owned(),
+                    max_version_tested: "10.0.22621.0".to_owned(),
+                    min_version: "10.0.17763.0".to_owned(),
+                }]),
+            }),
+            identity: Some(PackageIdentity {
+                resource_id: Some("".to_owned()),
+            }),
+            properties: Some(PackageProperties {
+                display_name: Some("My Application".to_owned()),
+                logo: Some("Assets/logo.png".to_owned()),
+                publisher_display_name: Some("My Company".to_owned()),
+            }),
+            publisher: "CN=MyCompany, O=MyCompany, C=US".to_owned(),
+            signature: Some(MsixSignature {
+                pfx_file: Some("certificate.pfx".to_owned()),
+                // Passphrase is read from the NFPM_MSIX_PASSPHRASE environment variable
             }),
         }),
     };
