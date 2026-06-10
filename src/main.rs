@@ -180,7 +180,7 @@ fn main() -> anyhow::Result<()> {
                 owner: None,
             }),
             packager: None,
-            list_connections_result_type: None,
+            confi_type: None,
         };
 
         if let Some(contents) = &mut config.contents {

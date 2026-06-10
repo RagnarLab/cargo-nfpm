@@ -10,7 +10,7 @@ use flate2::read::GzDecoder;
 use sha2::Digest;
 use tar::Archive;
 
-const NFPM_VERSION: &str = "2.44.0";
+const NFPM_VERSION: &str = "2.46.3";
 const CHECKSUMS: &str = include_str!(concat!(
     std::env!("CARGO_MANIFEST_DIR"),
     "/nfpm_checksums.txt"
